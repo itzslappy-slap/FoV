@@ -48,6 +48,8 @@ if not exist "!INFINIZOOM_LIBS!" (
     exit /b 1
 )
 
+echo Libs directory: !INFINIZOOM_LIBS!
+
 REM Set output directories
 set "OUT=%PROJ%\build\manual\classes"
 set "DIST=%PROJ%\build\manual\libs"
@@ -58,44 +60,55 @@ mkdir "!OUT!" "!DIST!"
 REM Build classpath from all jars
 setlocal enabledelayedexpansion
 set "CP="
-for /r "!INFINIZOOM_LIBS!" %%F in (*.jar) do (
-    if not "%%~nxF"=="*natives*" (
-        if defined CP (
-            set "CP=!CP!;%%F"
-        ) else (
-            set "CP=%%F"
-        )
+set "JAR_COUNT=0"
+for %%F in ("!INFINIZOOM_LIBS!\*.jar") do (
+    set /a JAR_COUNT+=1
+    if !JAR_COUNT! gtr 1 (
+        set "CP=!CP!;%%F"
+    ) else (
+        set "CP=%%F"
     )
+    echo Found: %%~nxF
 )
 
-if not defined CP (
+if %JAR_COUNT% equ 0 (
     echo error: no .jar files found in !INFINIZOOM_LIBS! >&2
     exit /b 1
 )
 
+echo Classpath count: %JAR_COUNT% jars
+
 REM Compile Java files
 echo ^>^> compiling...
+set "JAVA_FILES="
 for /r "%PROJ%\src\main\java" %%F in (*.java) do (
-    set "JAVA_FILES=!JAVA_FILES! %%F"
+    set "JAVA_FILES=!JAVA_FILES! "%%F""
 )
 
-if not defined JAVA_FILES (
+if "!JAVA_FILES!"=="" (
     echo error: no .java files found >&2
     exit /b 1
 )
 
 "!JDK!\bin\javac.exe" --release 25 -cp "!CP!" -d "!OUT!" !JAVA_FILES!
-if !errorlevel! neq 0 exit /b !errorlevel!
+if !errorlevel! neq 0 (
+    echo Compilation failed with error code !errorlevel!
+    exit /b !errorlevel!
+)
 
 REM Package resources
 echo ^>^> packaging resources...
-xcopy /s /i /y "%PROJ%\src\main\resources\*" "!OUT!"
+if exist "%PROJ%\src\main\resources" (
+    xcopy /s /i /y "%PROJ%\src\main\resources\*" "!OUT!" >nul
+)
 
 REM Update fabric.mod.json version using Python
 echo ^>^> updating fabric.mod.json...
-python -c "import json; d=json.load(open('!OUT!\fabric.mod.json')); d['version']='%MOD_VERSION%'; d.pop('icon',None); json.dump(d,open('!OUT!\fabric.mod.json','w'),indent=2)" 2>nul
-if !errorlevel! neq 0 (
-    echo warning: failed to update fabric.mod.json version >&2
+if exist "!OUT!\fabric.mod.json" (
+    python -c "import json; d=json.load(open('!OUT!\fabric.mod.json')); d['version']='%MOD_VERSION%'; d.pop('icon',None); json.dump(d,open('!OUT!\fabric.mod.json','w'),indent=2)" 2>nul
+    if !errorlevel! neq 0 (
+        echo warning: failed to update fabric.mod.json version >&2
+    )
 )
 
 REM Build jar
@@ -104,7 +117,10 @@ echo ^>^> building jar...
 pushd "!OUT!"
 "!JDK!\bin\jar.exe" --create --file "!JAR!" -C . .
 popd
-if !errorlevel! neq 0 exit /b !errorlevel!
+if !errorlevel! neq 0 (
+    echo Jar creation failed with error code !errorlevel!
+    exit /b !errorlevel!
+)
 
 echo ^>^> done: !JAR!
 
@@ -116,4 +132,5 @@ if defined INFINIZOOM_MODS_DIR (
 )
 
 endlocal
+pause
 exit /b 0
