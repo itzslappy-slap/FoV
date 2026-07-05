@@ -64,9 +64,9 @@ set "JAR_COUNT=0"
 for %%F in ("!INFINIZOOM_LIBS!\*.jar") do (
     set /a JAR_COUNT+=1
     if !JAR_COUNT! gtr 1 (
-        set "CP=!CP!;%%F"
+        set "CP=!CP!;"%%~fF""
     ) else (
-        set "CP=%%F"
+        set "CP="%%~fF""
     )
     echo Found: %%~nxF
 )
@@ -82,7 +82,7 @@ REM Compile Java files
 echo ^>^> compiling...
 set "JAVA_FILES="
 for /r "%PROJ%\src\main\java" %%F in (*.java) do (
-    set "JAVA_FILES=!JAVA_FILES! "%%F""
+    set "JAVA_FILES=!JAVA_FILES! "%%~fF""
 )
 
 if "!JAVA_FILES!"=="" (
@@ -93,6 +93,7 @@ if "!JAVA_FILES!"=="" (
 "!JDK!\bin\javac.exe" --release 25 -cp "!CP!" -d "!OUT!" !JAVA_FILES!
 if !errorlevel! neq 0 (
     echo Compilation failed with error code !errorlevel!
+    pause
     exit /b !errorlevel!
 )
 
@@ -119,6 +120,7 @@ pushd "!OUT!"
 popd
 if !errorlevel! neq 0 (
     echo Jar creation failed with error code !errorlevel!
+    pause
     exit /b !errorlevel!
 )
 
