@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "infinizoom",
+  "version": "${version}",
+  "name": "InfiniZoom",
+  "description": "Infinite, smooth scroll-to-zoom with sensitivity scaling that matches the zoom level.",
+  "authors": ["mistycalpi"],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/infinizoom/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.mistycalpi.infinizoom.InfiniZoomClient"
+    ],
+    "modmenu": [
+      "com.mistycalpi.infinizoom.compat.ModMenuIntegration"
+    ]
+  },
+  "mixins": [
+    "infinizoom.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.15.0",
+    "minecraft": "*",
+    "java": ">=25",
+    "fabric-api": "*"
+  },
+  "suggests": {
+    "modmenu": "*"
+  }
+}

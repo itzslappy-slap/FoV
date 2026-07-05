@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.mistycalpi.infinizoom.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "CameraFovMixin",
+    "HandScaleMixin",
+    "HudHideMixin",
+    "ScrollMixin",
+    "SensitivityMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "key.categories.infinizoom": "InfiniZoom",
+  "key.infinizoom.zoom": "Zoom",
+  "key.infinizoom.config": "Open InfiniZoom Settings",
+
+  "infinizoom.config.title": "InfiniZoom Settings",
+  "infinizoom.config.smoothness": "Zoom Smoothness: %s",
+  "infinizoom.config.scroll_step": "Zoom per Scroll: %s%%",
+  "infinizoom.config.default_zoom": "Starting Zoom: %sx",
+  "infinizoom.config.max_fov": "Max Zoom-Out FOV: %s°",
+  "infinizoom.config.sensitivity_mult": "Sensitivity Fine-Tune: %s",
+  "infinizoom.config.sensitivity_mode": "Mouse Sensitivity: %s",
+  "infinizoom.config.invert_scroll": "Invert Scroll: %s",
+  "infinizoom.config.activation.hold": "Activation: Hold to Zoom",
+  "infinizoom.config.activation.toggle": "Activation: Toggle (press once)",
+  "infinizoom.toggle.on": "ON",
+  "infinizoom.toggle.off": "OFF",
+
+  "infinizoom.sensitivity.full": "Sensitive (no scaling)",
+  "infinizoom.sensitivity.proportional": "Auto (scales with zoom)",
+  "infinizoom.sensitivity.dampened": "Less Sensitive (extra slow)",
+
+  "infinizoom.config.done": "Done",
+  "infinizoom.config.reset": "Reset to Defaults"
+}
