@@ -8,8 +8,22 @@ if "%PROJ:~-1%"=="\" set "PROJ=%PROJ:~0,-1%"
 set "MOD_ID=infinizoom"
 if not defined MOD_VERSION set "MOD_VERSION=1.0.2"
 
-REM Find Java
-set "JDK=%JAVA_HOME%"
+REM Find Java - check Eclipse Adoptium first, then JAVA_HOME, then PATH
+set "JDK="
+if not defined JDK (
+    if exist "C:\Users\Ant\AppData\Local\Programs\Eclipse Adoptium" (
+        for /d %%D in ("C:\Users\Ant\AppData\Local\Programs\Eclipse Adoptium\jdk-*") do (
+            if exist "%%D\bin\javac.exe" (
+                set "JDK=%%D"
+            )
+        )
+    )
+)
+
+if not defined JDK (
+    set "JDK=%JAVA_HOME%"
+)
+
 if not defined JDK (
     where javac >nul 2>&1
     if !errorlevel! equ 0 (
@@ -17,10 +31,17 @@ if not defined JDK (
         for %%A in ("!JAVAC_PATH!") do set "JAVAC_DIR=%%~dpA"
         for %%A in ("!JAVAC_DIR!..") do set "JDK=%%~dpA"
         if "!JDK:~-1!"=="\" set "JDK=!JDK:~0,-1!"
-    ) else (
-        echo error: no JDK found. Set JAVA_HOME ^(Java 25+^) or put javac on PATH. >&2
-        exit /b 1
     )
+)
+
+if not defined JDK (
+    echo error: no JDK found. Set JAVA_HOME ^(Java 25+^) or put javac on PATH. >&2
+    exit /b 1
+)
+
+if not exist "!JDK!\bin\javac.exe" (
+    echo error: javac.exe not found at !JDK!\bin\javac.exe >&2
+    exit /b 1
 )
 
 echo JDK: !JDK!
