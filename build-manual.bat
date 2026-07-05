@@ -74,7 +74,8 @@ mkdir "!PROJ!\build\manual" 2>nul
     echo !CP!
     echo -d
     echo !OUT!
-    echo -encoding UTF-8
+    echo -encoding
+    echo UTF-8
     for /r "%PROJ%\src\main\java" %%F in (*.java) do (
         echo %%F
     )
