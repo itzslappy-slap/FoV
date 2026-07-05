@@ -60,16 +60,19 @@ if exist "!OUT!" rmdir /s /q "!OUT!"
 if exist "!DIST!" rmdir /s /q "!DIST!"
 mkdir "!OUT!" "!DIST!"
 
-REM Build classpath from all jars
+REM Build classpath from all jars - escape special characters
 setlocal enabledelayedexpansion
 set "CP="
 set "JAR_COUNT=0"
 for %%F in ("!INFINIZOOM_LIBS!\*.jar") do (
     set /a JAR_COUNT+=1
+    set "JARPATH=%%F"
+    REM Escape + characters for batch
+    set "JARPATH=!JARPATH:+=^^^+!"
     if !JAR_COUNT! gtr 1 (
-        set "CP=!CP!;%%F"
+        set "CP=!CP!;!JARPATH!"
     ) else (
-        set "CP=%%F"
+        set "CP=!JARPATH!"
     )
     echo Found: %%~nxF
 )
@@ -80,8 +83,6 @@ if %JAR_COUNT% equ 0 (
 )
 
 echo Classpath count: %JAR_COUNT% jars
-echo.
-echo Classpath (first 200 chars): !CP:~0,200!
 echo.
 
 REM Find all Java files
@@ -103,8 +104,6 @@ echo.
 
 REM Compile Java files
 echo ^>^> compiling...
-echo Command: "!JDK!\bin\javac.exe" --release 25 -cp "!CP!" -d "!OUT!" !JAVA_FILES:~0,100!...
-echo.
 
 "!JDK!\bin\javac.exe" --release 25 -cp "!CP!" -d "!OUT!" !JAVA_FILES!
 if !errorlevel! neq 0 (
