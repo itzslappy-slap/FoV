@@ -64,34 +64,44 @@ if %JAR_COUNT% equ 0 (
 echo Classpath count: %JAR_COUNT% jars
 echo.
 
-REM Find all Java files
+REM Create temp file with list of Java files
+set "JAVA_LIST=%PROJ%\build\manual\java_files.txt"
+mkdir "!PROJ!\build\manual" 2>nul
+(
+    for /r "%PROJ%\src\main\java" %%F in (*.java) do (
+        echo %%F
+    )
+) > "!JAVA_LIST!"
+
+REM Count and display Java files
 echo ^>^> finding Java files...
 set "JAVA_COUNT=0"
-for /r "%PROJ%\src\main\java" %%F in (*.java) do (
-    set /a JAVA_COUNT+=1
-)
-
-if %JAVA_COUNT% equ 0 (
-    echo error: no .java files found >&2
-    exit /b 1
-)
-
+for /f %%L in ('find /c /v "" ^< "!JAVA_LIST!"') do set "JAVA_COUNT=%%L"
 echo Found %JAVA_COUNT% Java files
 echo.
 
-REM Compile Java files directly with cd to work directory
+if %JAVA_COUNT% equ 0 (
+    echo error: no .java files found >&2
+    del "!JAVA_LIST!"
+    exit /b 1
+)
+
+REM Compile Java files using argument file
 echo ^>^> compiling...
-cd /d "%PROJ%\src\main\java"
-"!JDK!\bin\javac.exe" --release 25 -cp "!CP!" -d "!OUT!" -encoding UTF-8 @-
+echo Command: "!JDK!\bin\javac.exe" --release 25 -cp "!CP!" -d "!OUT!" @"!JAVA_LIST!"
+echo.
+
+"!JDK!\bin\javac.exe" --release 25 -cp "!CP!" -d "!OUT!" @"!JAVA_LIST!"
 if !errorlevel! neq 0 (
     echo.
     echo Compilation failed with error code !errorlevel!
-    cd /d "%PROJ%"
+    echo Java files list at: !JAVA_LIST!
     pause
     exit /b !errorlevel!
 )
 
-cd /d "%PROJ%"
+REM Clean up temp file
+del "!JAVA_LIST!"
 
 REM Package resources
 echo ^>^> packaging resources...
