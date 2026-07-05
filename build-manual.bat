@@ -23,6 +23,8 @@ if not defined JDK (
     )
 )
 
+echo JDK: !JDK!
+
 REM Check for libs directory
 if not defined INFINIZOOM_LIBS set "INFINIZOOM_LIBS=%PROJ%\libs"
 if not exist "!INFINIZOOM_LIBS!" (
@@ -53,6 +55,7 @@ echo Libs directory: !INFINIZOOM_LIBS!
 REM Set output directories
 set "OUT=%PROJ%\build\manual\classes"
 set "DIST=%PROJ%\build\manual\libs"
+echo Output directory: !OUT!
 if exist "!OUT!" rmdir /s /q "!OUT!"
 if exist "!DIST!" rmdir /s /q "!DIST!"
 mkdir "!OUT!" "!DIST!"
@@ -64,9 +67,9 @@ set "JAR_COUNT=0"
 for %%F in ("!INFINIZOOM_LIBS!\*.jar") do (
     set /a JAR_COUNT+=1
     if !JAR_COUNT! gtr 1 (
-        set "CP=!CP!;"%%~fF""
+        set "CP=!CP!;%%F"
     ) else (
-        set "CP="%%~fF""
+        set "CP=%%F"
     )
     echo Found: %%~nxF
 )
@@ -77,21 +80,35 @@ if %JAR_COUNT% equ 0 (
 )
 
 echo Classpath count: %JAR_COUNT% jars
+echo.
+echo Classpath (first 200 chars): !CP:~0,200!
+echo.
 
-REM Compile Java files
-echo ^>^> compiling...
+REM Find all Java files
+echo ^>^> finding Java files...
 set "JAVA_FILES="
+set "JAVA_COUNT=0"
 for /r "%PROJ%\src\main\java" %%F in (*.java) do (
-    set "JAVA_FILES=!JAVA_FILES! "%%~fF""
+    set /a JAVA_COUNT+=1
+    set "JAVA_FILES=!JAVA_FILES! %%F"
 )
 
-if "!JAVA_FILES!"=="" (
+if %JAVA_COUNT% equ 0 (
     echo error: no .java files found >&2
     exit /b 1
 )
 
+echo Found %JAVA_COUNT% Java files
+echo.
+
+REM Compile Java files
+echo ^>^> compiling...
+echo Command: "!JDK!\bin\javac.exe" --release 25 -cp "!CP!" -d "!OUT!" !JAVA_FILES:~0,100!...
+echo.
+
 "!JDK!\bin\javac.exe" --release 25 -cp "!CP!" -d "!OUT!" !JAVA_FILES!
 if !errorlevel! neq 0 (
+    echo.
     echo Compilation failed with error code !errorlevel!
     pause
     exit /b !errorlevel!
