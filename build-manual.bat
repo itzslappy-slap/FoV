@@ -60,19 +60,16 @@ if exist "!OUT!" rmdir /s /q "!OUT!"
 if exist "!DIST!" rmdir /s /q "!DIST!"
 mkdir "!OUT!" "!DIST!"
 
-REM Build classpath from all jars - escape special characters
-setlocal enabledelayedexpansion
+REM Build classpath from all jars
+echo ^>^> building classpath...
 set "CP="
 set "JAR_COUNT=0"
 for %%F in ("!INFINIZOOM_LIBS!\*.jar") do (
     set /a JAR_COUNT+=1
-    set "JARPATH=%%F"
-    REM Escape + characters for batch
-    set "JARPATH=!JARPATH:+=^^^+!"
     if !JAR_COUNT! gtr 1 (
-        set "CP=!CP!;!JARPATH!"
+        set "CP=!CP!;%%F"
     ) else (
-        set "CP=!JARPATH!"
+        set "CP=%%F"
     )
     echo Found: %%~nxF
 )
@@ -85,13 +82,14 @@ if %JAR_COUNT% equ 0 (
 echo Classpath count: %JAR_COUNT% jars
 echo.
 
-REM Find all Java files
+REM Find all Java files and write to temp file
 echo ^>^> finding Java files...
-set "JAVA_FILES="
+set "JAVA_LIST=%PROJ%\build\manual\java_files.txt"
+if exist "!JAVA_LIST!" del "!JAVA_LIST!"
 set "JAVA_COUNT=0"
 for /r "%PROJ%\src\main\java" %%F in (*.java) do (
     set /a JAVA_COUNT+=1
-    set "JAVA_FILES=!JAVA_FILES! %%F"
+    echo %%F >> "!JAVA_LIST!"
 )
 
 if %JAVA_COUNT% equ 0 (
@@ -102,16 +100,19 @@ if %JAVA_COUNT% equ 0 (
 echo Found %JAVA_COUNT% Java files
 echo.
 
-REM Compile Java files
+REM Compile Java files using argument file
 echo ^>^> compiling...
 
-"!JDK!\bin\javac.exe" --release 25 -cp "!CP!" -d "!OUT!" !JAVA_FILES!
+"!JDK!\bin\javac.exe" --release 25 -cp "!CP!" -d "!OUT!" @"!JAVA_LIST!"
 if !errorlevel! neq 0 (
     echo.
     echo Compilation failed with error code !errorlevel!
     pause
     exit /b !errorlevel!
 )
+
+REM Clean up temp file
+del "!JAVA_LIST!"
 
 REM Package resources
 echo ^>^> packaging resources...
